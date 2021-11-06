@@ -14,6 +14,16 @@ const EpisodePage = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<Error | null>(null);
 
+	// const fixEpisode = (ep, i) => {
+	// 	const { _id, tags } = ep;
+	// 	if (tags === 0) {
+	// 		setTimeout(() => {
+	// 			updateDocument("episodes", _id, { tags: [] });
+	// 		}, i * 50);
+	// 	}
+	// 	return ep;
+	// };
+
 	useEffect(() => {
 		loadCollectionData("episodes")
 			.then(setEpisodes)
