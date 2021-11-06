@@ -1,6 +1,6 @@
 import { Checkbox, CheckboxGroup, FormHelperText, SimpleGrid } from "@chakra-ui/react";
+import { useIsomorphicLayoutEffect } from "hooks/useIsomorphicLayoutEffect";
 import { createRef, useState } from "react";
-import { useIsomorphicLayoutEffect } from "../../../hooks/useIsomorphicLayoutEffect";
 import { useFormValidationContext } from "../validation/FormValidationProvider";
 import { convertOptions } from "./utils";
 
@@ -8,7 +8,7 @@ import { convertOptions } from "./utils";
  * @typedef CheckBoxesProps
  * @property {String} name
  * @property {String} label
- * @property {any} options Available options to choose from (code + label) or map
+ * @property {any} options Available options to choose from [{code, label}] or map { code: label }
  * @property {"array"|"object"} [serialization="array"] Choose how to serialize the checked values
  * @property {Array|Object} [defaultValue=[]] The initial checked values (conforming to the serialization choice)
  * @property {Number} [columns=3]
@@ -34,16 +34,13 @@ const CheckBoxes = ({
 	const inputRef: React.RefObject<HTMLInputElement> = createRef(); // This ref will reference the first checkbox in the serie
 
 	// Find the Form Validation Context to register our input
-	const myValidationContext = useFormValidationContext();
-
-	const { register, errors, setData, getData, validate } = myValidationContext;
+	const { register, errors, setData, getData, validate } = useFormValidationContext();
 
 	// Register our Input so that the validation can take effect
 	register(name, { inputRef, required, defaultValue, validation });
 
 	// Get the current checked values from the ValidationContext
 	const [values, setValues] = useState(getData(name));
-	console.log("Checkboxes received default values", name, values, getData(name));
 
 	// Do we  have an error ?
 	const errorMessage = errors[name]?.message || "";
