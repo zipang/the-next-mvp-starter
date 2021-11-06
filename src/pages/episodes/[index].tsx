@@ -134,8 +134,8 @@ const EpisodePage = ({ index }) => {
 		<ErrorMessage error={error} />
 	) : episode ? (
 		<SwipeContainer
-			onSwipedLeft={navigate(router, index, _PREVIOUS)}
-			onSwipedRight={navigate(router, index, _NEXT)}
+			onSwipedLeft={navigate(router, index, _NEXT)}
+			onSwipedRight={navigate(router, index, _PREVIOUS)}
 		>
 			<Stack
 				bg="whiteAlpha.100"
