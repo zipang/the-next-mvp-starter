@@ -1,5 +1,5 @@
 import { Image } from "@chakra-ui/image";
-import { AspectRatio, Stack } from "@chakra-ui/layout";
+import { AspectRatio, Heading, Stack, Text } from "@chakra-ui/layout";
 import { DocumentData } from "@firebase/firestore";
 import { ErrorMessage } from "components/base/ErrorMessage";
 import { LoadingSpinner } from "components/base/LoadingSpinner";
@@ -74,7 +74,7 @@ const EpisodePage = ({ index }) => {
 	const router = useRouter();
 
 	const fixEpisode = (ep) => {
-		if (ep.tags === 0) ep.tags = []; // Something wrong in the database
+		if (ep && ep.tags === 0) ep.tags = []; // Something wrong in the database
 		setEpisode(ep);
 	};
 
@@ -99,14 +99,16 @@ const EpisodePage = ({ index }) => {
 	) : episode ? (
 		<Stack>
 			<p>
-				Loaded Episode #{episode.slug} <strong>{episode.title}</strong>
+				<code>#{episode.slug}</code>
 			</p>
+			<Heading>{episode.title}</Heading>
 
 			<FormValidationProvider data={{ ...episode }}>
-				<p>{episode.description}</p>
-				<AspectRatio ratio={1 / 1}>
+				<Text>{episode.description}</Text>
+				<AspectRatio ratio={4 / 3} bg="black">
 					<Image
 						alt={episode.title}
+						m="0 auto"
 						src={`https://www.tipafrance.com${episode.vignette}`}
 					/>
 				</AspectRatio>

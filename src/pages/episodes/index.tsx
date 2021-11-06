@@ -1,4 +1,4 @@
-import { Box, Link, LinkBox, SimpleGrid, Stack } from "@chakra-ui/layout";
+import { Box, Link, SimpleGrid, Stack, Text } from "@chakra-ui/layout";
 import { DocumentData } from "@firebase/firestore";
 import { ErrorMessage } from "components/base/ErrorMessage";
 import { LoadingSpinner } from "components/base/LoadingSpinner";
@@ -27,13 +27,16 @@ const EpisodePage = () => {
 		<ErrorMessage error={error} />
 	) : (
 		<Stack>
-			<p>Loaded {episodes.length} episodes</p>
+			<Text>Loaded {episodes.length} episodes</Text>
 			{episodes.map((ep) => (
-				<SimpleGrid key={ep.slug} templateColumns="1fr 3fr">
-					<LinkBox>
-						<Link href={`/episodes/${ep._id}`}>{ep.slug}</Link>
-					</LinkBox>
-					<Box>{ep.title}</Box>
+				<SimpleGrid key={ep.slug} templateColumns="1fr 3fr 1fr">
+					<Box>{ep._id}</Box>
+					<Box>
+						<Link href={`/episodes/${ep._id}`}>
+							{ep.title || `Episode ${ep._id}`}
+						</Link>
+					</Box>
+					<Box>{ep.publicationDate.substr(0, 4)}</Box>
 				</SimpleGrid>
 			))}
 		</Stack>
