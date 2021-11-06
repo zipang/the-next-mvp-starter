@@ -1,0 +1,22 @@
+import { Box } from "@chakra-ui/react";
+
+/**
+ * Centered, responsive container
+ */
+const Container = ({ children, ...moreStyles }) => (
+	<Box
+		className="container"
+		width="100%"
+		m="0 auto"
+		maxWidth={{
+			sm: "95%",
+			lg: "75%",
+			xl: "65ch"
+		}}
+		{...moreStyles}
+	>
+		{children}
+	</Box>
+);
+
+export default Container;

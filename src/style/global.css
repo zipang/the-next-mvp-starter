@@ -1,0 +1,8 @@
+/* Define the "System" font family */
+@font-face {
+	font-family: System;
+	font-style: normal;
+	font-weight: 400;
+	src: local("Roboto"), local(".SFNSText-Light"), local("Segoe UI"), local("Ubuntu"),
+		local(".HelveticaNeueDeskInterface-Regular"), local("DroidSans"), local("Tahoma");
+}
