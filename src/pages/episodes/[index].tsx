@@ -137,10 +137,10 @@ const EpisodePage = ({ index }) => {
 	) : error ? (
 		<ErrorMessage error={error} />
 	) : episode ? (
-		<Stack bg="white" m={2} p={2}>
-			<p>
+		<Stack bg="white" mt={6} p={4} boxShadow="md" borderRadius="md">
+			<Text>
 				<code>#{episode.slug}</code>
-			</p>
+			</Text>
 			<Heading>{episode.title}</Heading>
 
 			<Text>{episode.description}</Text>
