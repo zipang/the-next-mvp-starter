@@ -5,6 +5,7 @@ import { StringOrNumber } from "@chakra-ui/utils";
 import { DocumentData } from "@firebase/firestore";
 import { ErrorMessage } from "components/base/ErrorMessage";
 import { LoadingSpinner } from "components/base/LoadingSpinner";
+import { SwipeContainer } from "components/base/SwipeContainer";
 import { loadDocument, updateDocument } from "lib/firebase/FirestoreClient";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { NextRouter, useRouter } from "next/dist/client/router";
@@ -76,7 +77,7 @@ const ChooseCategories = ({
 const navigate =
 	(router: NextRouter, index: string, delta = 0) =>
 	(evt) => {
-		evt.preventDefault();
+		if (evt && evt.preventDefault) evt.preventDefault();
 		const nextEpisode = (10000 + Number.parseInt(index) + delta).toString().substr(1);
 		router.push(`/episodes/${nextEpisode}`);
 	};
@@ -112,11 +113,6 @@ const EpisodePage = ({ index }) => {
 	const [error, setError] = useState<Error>();
 	const router = useRouter();
 
-	const fixEpisode = (ep) => {
-		if (ep && ep.tags === 0) ep.tags = []; // Something wrong in the database
-		setEpisode(ep);
-	};
-
 	useKeys(["PageUp"], navigate(router, index, -10));
 	useKeys(["PageDown"], navigate(router, index, 10));
 	useKeys(["Home"], navigate(router, "0001"));
@@ -127,7 +123,7 @@ const EpisodePage = ({ index }) => {
 	useEffect(() => {
 		console.log(`Loading episode ${index}`);
 		loadDocument("episodes", index)
-			.then(fixEpisode)
+			.then(setEpisode)
 			.catch(setError)
 			.finally(() => setLoading(false));
 	}, [index]);
@@ -137,29 +133,34 @@ const EpisodePage = ({ index }) => {
 	) : error ? (
 		<ErrorMessage error={error} />
 	) : episode ? (
-		<Stack bg="white" mt={6} p={4} boxShadow="md" borderRadius="md">
-			<Text>
-				<code>#{episode.slug}</code>
-			</Text>
-			<Heading>{episode.title}</Heading>
+		<SwipeContainer
+			onSwipedLeft={navigate(router, index, _PREVIOUS)}
+			onSwipedRight={navigate(router, index, _NEXT)}
+		>
+			<Stack bg="white" mt={6} p={4} boxShadow="md" borderRadius="md">
+				<Text>
+					<code>#{episode.slug}</code>
+				</Text>
+				<Heading>{episode.title}</Heading>
 
-			<Text>{episode.description}</Text>
-			<AspectRatio ratio={4 / 3} bg="black">
-				<Image
-					alt={episode.title}
-					m="0 auto"
-					src={`https://www.tipafrance.com${episode.vignette}`}
+				<Text>{episode.description}</Text>
+				<AspectRatio ratio={4 / 3} bg="black">
+					<Image
+						alt={episode.title}
+						m="0 auto"
+						src={`https://www.tipafrance.com${episode.vignette}`}
+					/>
+				</AspectRatio>
+
+				<ChooseCategories
+					name="tags"
+					label="Catégories"
+					options={categories}
+					selected={episode.tags}
+					onChange={updateCategory(index)}
 				/>
-			</AspectRatio>
-
-			<ChooseCategories
-				name="tags"
-				label="Catégories"
-				options={categories}
-				selected={episode.tags}
-				onChange={updateCategory(index)}
-			/>
-		</Stack>
+			</Stack>
+		</SwipeContainer>
 	) : (
 		<p>Not found</p>
 	);

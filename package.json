@@ -19,7 +19,9 @@
 		"react": "^17.0.2",
 		"react-dom": "^17.0.2",
 		"react-firebase-hooks": "^4.0.0",
-		"rooks": "^5.7.3"
+		"react-swipeable": "^6.2.0",
+		"rooks": "^5.7.3",
+		"use-swipe-hook": "^2.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^14",
