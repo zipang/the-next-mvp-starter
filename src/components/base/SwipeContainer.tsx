@@ -30,9 +30,9 @@ export const SwipeContainer = ({
 	const cardElem = useRef(null);
 	const x = useMotionValue(0);
 	const input = [-400, 0, 400];
-	const outputOpacity = [0, 1, 0];
+	// const outputOpacity = [0, 1, 0];
 	const outputRotateY = [-90, 0, 90];
-	const opacity = useTransform(x, input, outputOpacity);
+	// const opacity = useTransform(x, input, outputOpacity);
 	const rotateY = useTransform(x, input, outputRotateY);
 	const [direction, setDirection] = useState<string | null>(null);
 
@@ -65,10 +65,10 @@ export const SwipeContainer = ({
 			dragConstraints={{ left: 0, right: 0 }}
 			dragElastic={1}
 			ref={cardElem}
-			style={{ x, opacity, rotateY }}
+			style={{ x, rotateY }}
 			onDrag={determineDirection}
 			onDragEnd={onDragEnd}
-			whileTap={{ scale: 0.9, cursor: "grabbing" }}
+			whileTap={{ cursor: "grabbing" }}
 		>
 			{children}
 		</motion.div>
