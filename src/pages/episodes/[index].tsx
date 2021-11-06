@@ -137,7 +137,14 @@ const EpisodePage = ({ index }) => {
 			onSwipedLeft={navigate(router, index, _PREVIOUS)}
 			onSwipedRight={navigate(router, index, _NEXT)}
 		>
-			<Stack bg="white" mt={6} p={4} boxShadow="md" borderRadius="md">
+			<Stack
+				bg="whiteAlpha.100"
+				mt={6}
+				p={4}
+				boxShadow="md"
+				borderRadius="md"
+				border="1px solid #bbb"
+			>
 				<Text>
 					<code>#{episode.slug}</code>
 				</Text>
