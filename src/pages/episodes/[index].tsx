@@ -1,14 +1,14 @@
+import { Checkbox, CheckboxGroup } from "@chakra-ui/checkbox";
 import { Image } from "@chakra-ui/image";
-import { AspectRatio, Heading, Stack, Text } from "@chakra-ui/layout";
+import { AspectRatio, Heading, SimpleGrid, Stack, Text } from "@chakra-ui/layout";
+import { StringOrNumber } from "@chakra-ui/utils";
 import { DocumentData } from "@firebase/firestore";
 import { ErrorMessage } from "components/base/ErrorMessage";
 import { LoadingSpinner } from "components/base/LoadingSpinner";
-import CheckBoxes from "components/forms/inputs/CheckBoxes";
-import { FormValidationProvider } from "components/forms/validation/FormValidationProvider";
 import { loadDocument, updateDocument } from "lib/firebase/FirestoreClient";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { NextRouter, useRouter } from "next/dist/client/router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useKeys } from "rooks";
 import { withContainerLayout } from "src/layouts/ContainerLayout";
 
@@ -27,6 +27,45 @@ const categories: any = [
 	{ code: "antoine", label: "Journal d’Antoine" },
 	{ code: "practical_french", label: "Français pratique" }
 ];
+
+const ChooseCategories = ({
+	name,
+	label = "Categories",
+	options = [],
+	selected = [],
+	onChange
+}) => {
+	const [values, setValues] = useState<StringOrNumber[]>([]);
+
+	useEffect(() => {
+		setValues(selected);
+	}, [selected]);
+
+	return (
+		<CheckboxGroup
+			value={values}
+			onChange={(values) => {
+				const patch = {};
+				patch[name] = values;
+				onChange(patch);
+				setValues(values);
+			}}
+		>
+			{label}
+			<SimpleGrid columns={3}>
+				{options.map(({ code, label }) => (
+					<Checkbox
+						name={`${name}:${code}`}
+						key={`${name}:${code}`}
+						value={code}
+					>
+						{label}
+					</Checkbox>
+				))}
+			</SimpleGrid>
+		</CheckboxGroup>
+	);
+};
 
 /**
  * Navigate to a relative or absolute position
@@ -86,6 +125,7 @@ const EpisodePage = ({ index }) => {
 	useKeys(["Control", "ArrowRight"], navigate(router, index, _NEXT));
 
 	useEffect(() => {
+		console.log(`Loading episode ${index}`);
 		loadDocument("episodes", index)
 			.then(fixEpisode)
 			.catch(setError)
@@ -97,32 +137,28 @@ const EpisodePage = ({ index }) => {
 	) : error ? (
 		<ErrorMessage error={error} />
 	) : episode ? (
-		<Stack>
+		<Stack bg="white" m={2} p={2}>
 			<p>
 				<code>#{episode.slug}</code>
 			</p>
 			<Heading>{episode.title}</Heading>
 
-			<FormValidationProvider data={{ ...episode }}>
-				<Text>{episode.description}</Text>
-				<AspectRatio ratio={4 / 3} bg="black">
-					<Image
-						alt={episode.title}
-						m="0 auto"
-						src={`https://www.tipafrance.com${episode.vignette}`}
-					/>
-				</AspectRatio>
-
-				<CheckBoxes
-					name="tags"
-					label="Catégories"
-					key={index}
-					serialization="array"
-					options={categories}
-					defaultValue={episode.tags}
-					onChange={updateCategory(index)}
+			<Text>{episode.description}</Text>
+			<AspectRatio ratio={4 / 3} bg="black">
+				<Image
+					alt={episode.title}
+					m="0 auto"
+					src={`https://www.tipafrance.com${episode.vignette}`}
 				/>
-			</FormValidationProvider>
+			</AspectRatio>
+
+			<ChooseCategories
+				name="tags"
+				label="Catégories"
+				options={categories}
+				selected={episode.tags}
+				onChange={updateCategory(index)}
+			/>
 		</Stack>
 	) : (
 		<p>Not found</p>
