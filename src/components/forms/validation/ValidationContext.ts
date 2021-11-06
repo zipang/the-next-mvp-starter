@@ -69,10 +69,8 @@ const registerField =
 		}
 
 		console.log(
-			`Registering field '${name}', required: ${required}, ${Object.keys(
-				validation
-			)}, value: '${currentValue}'`,
-			inputRef
+			`Registering field '${name}', required: ${required}, value: '${currentValue}'`,
+			data
 		);
 	};
 

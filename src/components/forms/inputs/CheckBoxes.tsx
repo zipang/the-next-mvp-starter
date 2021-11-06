@@ -34,14 +34,16 @@ const CheckBoxes = ({
 	const inputRef: React.RefObject<HTMLInputElement> = createRef(); // This ref will reference the first checkbox in the serie
 
 	// Find the Form Validation Context to register our input
-	const { register, errors, setData, getData, validate } = useFormValidationContext();
+	const myValidationContext = useFormValidationContext();
+
+	const { register, errors, setData, getData, validate } = myValidationContext;
 
 	// Register our Input so that the validation can take effect
 	register(name, { inputRef, required, defaultValue, validation });
 
 	// Get the current checked values from the ValidationContext
 	const [values, setValues] = useState(getData(name));
-	console.log("Checkboxes received default values", name, values);
+	console.log("Checkboxes received default values", name, values, getData(name));
 
 	// Do we  have an error ?
 	const errorMessage = errors[name]?.message || "";
@@ -81,13 +83,6 @@ const CheckBoxes = ({
 		setValues(updated);
 	};
 
-	const isChecked = (val) => {
-		const checked =
-			serialization === "array" ? values.includes(val) : Boolean(values[val]);
-		console.log(`Checkbox '${val}' is ${checked ? "" : "not"} checked`, checked);
-		return checked;
-	};
-
 	useIsomorphicLayoutEffect(() => {
 		if (autoFocus) {
 			inputRef.current?.focus();
@@ -95,7 +90,7 @@ const CheckBoxes = ({
 	}, [name]);
 
 	return (
-		<CheckboxGroup>
+		<CheckboxGroup value={values}>
 			{label}
 			<SimpleGrid columns={columns}>
 				{options.map(({ code, label }, i) => {
@@ -106,7 +101,6 @@ const CheckBoxes = ({
 								name={`${name}:${code}`}
 								key={`${name}:${code}`}
 								value={code}
-								defaultChecked={isChecked(code)}
 								onChange={_onChange}
 							>
 								{label}
@@ -118,7 +112,6 @@ const CheckBoxes = ({
 								name={`${name}:${code}`}
 								key={`${name}:${code}`}
 								value={code}
-								isChecked={isChecked(code)}
 								onChange={_onChange}
 							>
 								{label}

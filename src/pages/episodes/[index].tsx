@@ -39,7 +39,7 @@ const navigate =
 	(evt) => {
 		evt.preventDefault();
 		const nextEpisode = (10000 + Number.parseInt(index) + delta).toString().substr(1);
-		router.replace(`/episodes/${nextEpisode}`);
+		router.push(`/episodes/${nextEpisode}`);
 	};
 
 const updateCategory = (index) => (data) => {
@@ -114,8 +114,10 @@ const EpisodePage = ({ index }) => {
 				<CheckBoxes
 					name="tags"
 					label="Catégories"
-					options={categories}
+					key={index}
 					serialization="array"
+					options={categories}
+					defaultValue={episode.tags}
 					onChange={updateCategory(index)}
 				/>
 			</FormValidationProvider>

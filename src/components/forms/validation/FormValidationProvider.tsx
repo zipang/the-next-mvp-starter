@@ -1,4 +1,4 @@
-import { Context, createContext, useContext, useState } from "react";
+import { Context, createContext, useContext, useEffect, useState } from "react";
 import { createValidationContext, ValidationContext } from "./ValidationContext";
 
 const FormValidationContext: Context<any> = createContext(undefined);
@@ -9,31 +9,34 @@ const FormValidationContext: Context<any> = createContext(undefined);
  * @param {PropsWithChildren} props
  * @param {ValidationContextOptions} [props.options]
  */
-export const FormValidationProvider = ({ children, ...options }) => {
+export const FormValidationProvider = ({ children, data = {} }) => {
 	// Store the initial validationContext state
-	const [validationContext, setValidationContext] = useState(
-		createValidationContext(options)
-	);
+	const newContext = createValidationContext({ data });
+	const [validationContext, setValidationContext] =
+		useState<ValidationContext>(newContext);
 
-	// Validation context can globally change after a call to the `validate` or `setData` methods
-	// Therefore we will check to apply a state change with the result of the validate() or setData() call
-	["validate", "setData"].forEach((methodName) => {
-		const originalMethod = validationContext[methodName];
-		// Note : be careful not to wrap the validate method multiple times
-		if (!originalMethod._enhanced) {
-			validationContext[methodName] = (...args) => {
-				const updatedValidationContext = originalMethod(...args);
-				if (updatedValidationContext !== validationContext) {
-					setValidationContext(updatedValidationContext);
-				}
-				return updatedValidationContext;
-			};
-			validationContext[methodName]._enhanced = true;
-		}
-	});
+	useEffect(() => {
+		// Validation context can globally change after a call to the `validate` or `setData` methods
+		// Therefore we will check to apply a state change with the result of the validate() or setData() call
+		["validate", "setData"].forEach((methodName) => {
+			const originalMethod = newContext[methodName];
+			// Note : be careful not to wrap the validate method multiple times
+			if (!originalMethod._enhanced) {
+				newContext[methodName] = (...args) => {
+					const updatedValidationContext = originalMethod(...args);
+					if (updatedValidationContext !== newContext) {
+						setValidationContext(updatedValidationContext);
+					}
+					return updatedValidationContext;
+				};
+				newContext[methodName]._enhanced = true;
+			}
+		});
+		setValidationContext(newContext);
+	}, [data]);
 
 	return (
-		<FormValidationContext.Provider value={validationContext}>
+		<FormValidationContext.Provider value={{ ...validationContext }}>
 			{children}
 		</FormValidationContext.Provider>
 	);
