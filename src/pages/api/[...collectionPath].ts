@@ -146,9 +146,11 @@ const getCollection = async (req: NextApiRequest, resp: NextApiResponse) => {
 
 		// Pagination
 		const pageSize = parseInt(req.query, ["limit", "pageSize", "page_size"]);
-		if (pageSize !== undefined) {
+
+		if (pageSize) {
+			// we de-facto exclude the case where pageSize=0
 			collectionRef = collectionRef.limit(pageSize);
-			// Parse to integer
+			// Parse other integer pagination parameters
 			const page = parseInt(req.query, ["page"]);
 			let offset = parseInt(req.query, ["offset"]);
 			if (page || offset) {
@@ -161,9 +163,9 @@ const getCollection = async (req: NextApiRequest, resp: NextApiResponse) => {
 
 		let i = 0;
 		/**
-		 * Transform stream
-		 * Takes a stream of DocumentData objects from firestore
-		 * and stream back the JSON
+		 * Create a Transform stream that will read a
+		 * stream of DocumentData objects from firestore
+		 * and write their JSON representation as strings
 		 */
 		const toJSON = new Transform({
 			writableObjectMode: true,
