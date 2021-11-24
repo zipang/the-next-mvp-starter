@@ -6,14 +6,15 @@ import { NextApiRequest } from "next";
 export type QueryParameter = string | string[] | undefined;
 
 /**
- * Parse a parameter into an integer value if available
- * @param {Object} source
+ * Parse an integer parameter that may have aliases (names variations)
+ *
+ * @param {Object} source The NextJS Api query object
  * @param {String|Array<String>} names Aliases for the parameter names
- * @param {Boolean} [required=false]
+ * @param {Boolean} [required=false] Is it required ? (throws an exception when not present)
  * @returns {Number|undefined}
  * @throws {TypeError}
  */
-export const parseInt = (
+export const parseIntegerParam = (
 	source: NextApiRequest["query"],
 	names: string | string[],
 	required = false

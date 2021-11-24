@@ -1,48 +1,8 @@
 import { DocumentData } from "firebase-admin/firestore";
 import { initFirestoreSDK } from "lib/firebase/FirebaseAdmin";
+import { parseIntegerParam } from "lib/utils/Parameters";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Transform } from "stream";
-
-/**
- * That's how NextJS query parameters are allready pre-parsed
- */
-type QueryParameter = string | string[] | undefined;
-
-/**
- * Parse a parameter into an integer value if available
- * @param {Object} source
- * @param {Array<String>} names Aliases for the parameter names
- * @param {Boolean} [required=false]
- * @returns {Number|undefined}
- * @throws {TypeError}
- */
-const parseInt = (
-	source: NextApiRequest["query"],
-	names: string[] = ["name"],
-	required = false
-): number | undefined => {
-	// Read inside the source (the half-parsed query)
-	const str: QueryParameter = names.reduce(
-		(found: QueryParameter, name) => (found !== undefined ? found : source[name]),
-		undefined
-	);
-
-	if (typeof str === "string") {
-		try {
-			return Number.parseInt(str, 10);
-		} catch (err) {
-			throw new TypeError(
-				`Parameter ${names.join("|")} is not of the expected type (integer)`
-			);
-		}
-	}
-
-	// str is not defined
-	if (required) {
-		throw new TypeError(`Parameter ${names.join("|")} (integer) is required`);
-	}
-	return undefined;
-};
 
 /**
  * Check if a .json extension is present or if a fileName parameter is present
@@ -145,14 +105,14 @@ const getCollection = async (req: NextApiRequest, resp: NextApiResponse) => {
 		}
 
 		// Pagination
-		const pageSize = parseInt(req.query, ["limit", "pageSize", "page_size"]);
+		const pageSize = parseIntegerParam(req.query, ["limit", "pageSize", "page_size"]);
 
 		if (pageSize) {
 			// we de-facto exclude the case where pageSize=0
 			collectionRef = collectionRef.limit(pageSize);
 			// Parse other integer pagination parameters
-			const page = parseInt(req.query, ["page"]);
-			let offset = parseInt(req.query, ["offset"]);
+			const page = parseIntegerParam(req.query, ["page"]);
+			let offset = parseIntegerParam(req.query, ["offset"]);
 			if (page || offset) {
 				if (page) {
 					offset = (page - 1) * pageSize;
