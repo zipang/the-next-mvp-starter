@@ -10,8 +10,8 @@ export const isEmpty = (obj) => Object.keys(obj).length === 0;
  * (property names or array indexes)
  * @example
  *   splitPath("persons[0].address.street") => ["persons", "0", "address", "street"]
- * @param {StringProducerTransformer} path
- * @return {Array}
+ * @param {String} path
+ * @return {Array<String>}
  */
 export const splitPath = (path = "") => path.split(/[,[\].]+?/).filter(Boolean);
 
