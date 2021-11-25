@@ -52,7 +52,7 @@ export const DataTable = ({ columnDefs, data }) => {
 				))
 			}
 			{columnDefs.map(({ accessor, width }, i) => (
-				<Box className="column" key={`column`} width={width}>
+				<Box className="column" key={`column-${i}`} width={width}>
 					{getData(data, accessor)}
 				</Box>
 			))}

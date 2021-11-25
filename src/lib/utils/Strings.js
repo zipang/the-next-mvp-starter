@@ -4,6 +4,14 @@ const SLUG_TO =
 	"aaaaaaaaaacccddeeeeeeeegghiiiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz";
 const SLUG_SEARCH = new RegExp(SLUG_FROM.split("").join("|"), "g");
 
+export const slugify = (str = "") => {
+	return str
+		.toLowerCase()
+		.replace(SLUG_SEARCH, (c) => SLUG_TO.charAt(SLUG_FROM.indexOf(c))) // Replace special characters
+		.replace(/[^a-z0-9]+/g, "-") // dashify all forbidden chars
+		.replace(/^-+|-+$/g, ""); // remove leading and trailing dash
+};
+
 export const StringExtensions = {
 	camelize: function () {
 		return this.trim().replace(/(\-|_|\s)+(.)?/g, function (mathc, sep, c) {
