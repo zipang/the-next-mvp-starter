@@ -27,3 +27,31 @@ export const exitOnRejections = () => {
 		process.exit(1);
 	});
 };
+
+/**
+ * Run a list of jobs concurrently with a limit
+ * @param {Array<Function>} jobs
+ * @param {Number} [concurrency=2] Limit the number of jobs running concurrently
+ * @returns {Array}
+ */
+export const waitForAllJobs = async (jobs, concurrency = 2) => {
+	let currentJobIndex = 0;
+	const results = [];
+
+	// Take the next job and
+	const execThread = async () => {
+		while (currentJobIndex < jobs.length) {
+			const curIndex = currentJobIndex++;
+			// Use of `curIndex` is important because `index` may change after await is resolved
+			results[curIndex] = await jobs[curIndex]();
+		}
+	};
+
+	// Start a pseudo pool of threads
+	const pool = [];
+	for (let i = 0; i < concurrency; i++) {
+		pool.push(execThread());
+	}
+	await Promise.all(pool);
+	return results;
+};
