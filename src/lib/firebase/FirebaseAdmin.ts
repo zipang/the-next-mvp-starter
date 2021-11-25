@@ -1,27 +1,33 @@
-import { cert, getApp, initializeApp, ServiceAccount } from "firebase-admin/app";
+import { App, cert, getApp, initializeApp, ServiceAccount } from "firebase-admin/app";
 import { Firestore, getFirestore } from "firebase-admin/firestore";
 
-const readServiceAccount = (): ServiceAccount => {
-	// Read from the environment variables
+/**
+ * Read Firebase service account details from the environment variables
+ */
+const readServiceAccountDetails = (): ServiceAccount => {
+	// Check that all the variables exist in the current environment
+	[
+		"NEXT_PUBLIC_FIREBASE_PROJECT_ID",
+		"FIREBASE_ADMIN_SDK_PRIVATE_KEY",
+		"FIREBASE_ADMIN_SDK_CLIENT_EMAIL"
+	].forEach((varName) => {
+		if (!process.env[varName]) {
+			throw new Error(
+				`Missing environment variable '${varName}' to init the Firebase SDK.
+Add them in the secrets of your Vercel project settings.`
+			);
+		}
+	});
+	// It should be good now
 	const {
-		NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-		FIREBASE_ADMIN_SDK_PRIVATE_KEY,
-		FIREBASE_ADMIN_SDK_CLIENT_EMAIL
+		NEXT_PUBLIC_FIREBASE_PROJECT_ID: projectId,
+		FIREBASE_ADMIN_SDK_PRIVATE_KEY: privateKey,
+		FIREBASE_ADMIN_SDK_CLIENT_EMAIL: clientEmail
 	} = process.env;
-	if (!FIREBASE_ADMIN_SDK_PRIVATE_KEY) {
-		throw new Error(
-			`Missing environment variables to init the Firebase SDK : FIREBASE_ADMIN_SDK_PRIVATE_KEY`
-		);
-	}
-	if (!FIREBASE_ADMIN_SDK_CLIENT_EMAIL) {
-		throw new Error(
-			`Missing environment variables to init Firebase SDK : FIREBASE_ADMIN_SDK_CLIENT_EMAIL`
-		);
-	}
 	return {
-		projectId: NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-		clientEmail: FIREBASE_ADMIN_SDK_CLIENT_EMAIL,
-		privateKey: FIREBASE_ADMIN_SDK_PRIVATE_KEY
+		projectId,
+		clientEmail,
+		privateKey
 	};
 };
 
@@ -35,13 +41,14 @@ export const initFirestoreSDK = async (appName): Promise<Firestore> => {
 		throw new Error("Admin SDK can only be used on the server side.");
 	}
 
-	let app;
+	let app: App;
 
 	try {
 		app = getApp(appName);
 	} catch (err) {
-		// FirebaseAppError: Firebase app named ".." does not exist.
-		const serviceAccount = readServiceAccount();
+		// Catch the FirebaseAppError: Firebase app named ".." does not exist.
+		// to initialize the SDK
+		const serviceAccount = readServiceAccountDetails();
 		app = initializeApp(
 			{
 				credential: cert(serviceAccount),
