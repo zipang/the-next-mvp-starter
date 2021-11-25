@@ -24,11 +24,12 @@ const checkForFileAttachment = (req: NextApiRequest, resp: NextApiResponse) => {
 };
 
 /**
- * GET a collection or a document by its path
+ * GET a document or collection by its path
+ * Filter, paginate, download the results
  * @param {NextApiRequest} req
  * @param {NextApiResponse} resp
  */
-const getCollection = async (req: NextApiRequest, resp: NextApiResponse) => {
+const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiResponse) => {
 	try {
 		// Get the firestore instance
 		const firestore = await initFirestoreSDK(
@@ -149,4 +150,4 @@ const getCollection = async (req: NextApiRequest, resp: NextApiResponse) => {
 	}
 };
 
-export default getCollection;
+export default getDocumentOrCollection;
