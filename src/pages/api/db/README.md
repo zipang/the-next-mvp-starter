@@ -21,8 +21,8 @@ FIREBASE_ADMIN_SDK_CLIENT_EMAIL = something-like@your-project-id.iam.gserviceacc
 FIREBASE_ADMIN_SDK_PRIVATE_KEY = -----BEGIN PRIVATE KEY-----|IMPORTANT: Replace all the \n with pipes when you copy the key|-----END PRIVATE KEY-----|
 ```
 
-The first batch of `NEXT_PUBLIC_FIREBASE` properties are the one that are used by the web client sdk.  
-They are not sensitives. You can find them and copy them from the Firebase console : Project Settings, apps (create one) and the code sample that is provided to instanciate the web SDK :
+The first batch of `NEXT_PUBLIC_FIREBASE_..` properties are the same ones used to instantiate the [Firebase Javascript SDK](https://firebase.google.com/docs/web/learn-more?authuser=0#config-object).  
+They are not sensitives. You can find them and copy them from the Firebase console : Project Settings > apps (create one) and the code sample that is provided to instanciate the web SDK :
 
 ```js
 // Your web app's Firebase configuration
@@ -39,27 +39,26 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 ```
 
-The second batch of properties are needed to instanciate a NodeJS only Admin SDK. These credentials are sensitives because the Admin SDK has all powers on the database.
-The way to get these properties is usually to download a one time only JSON file names Service Account.
+The second batch of properties (`FIREBASE_ADMIN_SDK_..`) are needed to instanciate a NodeJS only Admin SDK. These credentials are sensitives because the Admin SDK has all powers on the database.
+The way to get these properties is usually to download a one time only JSON file that contains the Service Account private key : go to Project Settings > Service accounts in your Firebase console and click on the `Generate new private key` button. [Full explanations here](https://firebase.google.com/docs/admin/setup?authuser=0).
 These properties must be copied from the JSON file that looks like this :
 
 ```JSON
 {
 	"type": "service_account",
-	"project_id": "same-as-before-seen",
+	"project_id": "same-as-before",
 	"private_key_id": "weirdo",
 	"private_key": "-----BEGIN PRIVATE KEY-----\nSOME RANDOM BASE64 STRING\nAANOTHER ONE\nAND SO ON\nBLAH BLAH BLAH==\n-----END PRIVATE KEY-----\n",
-	"client_email": "...@....iam.gserviceaccount.com",
-	"client_id": "...",
+	"client_email": "(...)@(...).iam.gserviceaccount.com",
+	"client_id": "(...)",
 	"auth_uri": "https://accounts.google.com/o/oauth2/auth",
 	"token_uri": "https://oauth2.googleapis.com/token",
 	"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-	"client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/.....iam.gserviceaccount.com"
+	"client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/(...).iam.gserviceaccount.com"
 }
 ```
 
-But with an important trick :
-`FIREBASE_ADMIN_SDK_PRIVATE_KEY` must received the value found in the `private_key` but with all the `\n` (line feeds) replaced by pipes (`|`) so that the environment variable can be reconstructed.
+Copy `client_email` into `FIREBASE_ADMIN_SDK_CLIENT_EMAIL` and `private_key` into `FIREBASE_ADMIN_SDK_PRIVATE_KEY` but with an IMPORTANT TRICK : the value found in the `private_key` must be edited to replace all `\n` characters (new lines) by pipes (`|`) so that the key can now be safely reconstructed from the environment variable that doesn't accept line breaks.
 
 ### Vercel :
 
