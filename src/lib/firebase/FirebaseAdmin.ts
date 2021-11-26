@@ -18,12 +18,18 @@ Add them in the secrets of your Vercel project settings.`
 			);
 		}
 	});
+
 	// It should be good now
-	const {
+	let {
 		NEXT_PUBLIC_FIREBASE_PROJECT_ID: projectId,
 		FIREBASE_ADMIN_SDK_PRIVATE_KEY: privateKey,
 		FIREBASE_ADMIN_SDK_CLIENT_EMAIL: clientEmail
 	} = process.env;
+
+	// Now the private key is multiline and must be reconstructed
+	privateKey = privateKey?.split("|").join("\n");
+	console.log(privateKey);
+
 	return {
 		projectId,
 		clientEmail,
