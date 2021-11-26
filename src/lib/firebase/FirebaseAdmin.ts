@@ -28,7 +28,7 @@ Add them in the secrets of your Vercel project settings.`
 
 	// Now the private key is multiline and must be reconstructed
 	privateKey = privateKey?.split("|").join("\n");
-	console.log(privateKey);
+	console.log("Debug how the key is parsed on Vercel (to be removed)", privateKey);
 
 	return {
 		projectId,
