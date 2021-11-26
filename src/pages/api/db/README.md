@@ -85,7 +85,7 @@ To select only the relevant fields you are interested into, just pass the `field
 https://somewhere.overthe.rainbow/api/db/collection?fields=this,that
 ```
 
-### LIMIT
+### PAGINATE
 
 To limit the amount of data retrieved, pass the `limit` or `pageSize` parameter :
 
@@ -97,6 +97,18 @@ OR
 
 ```
 https://somewhere.overthe.rainbow/api/db/collection?pageSize=100
+```
+
+To go to a specific `page` or `offset`, use these parameters :
+
+```
+https://somewhere.overthe.rainbow/api/db/collection?limit=100&page=2
+```
+
+OR
+
+```
+https://somewhere.overthe.rainbow/api/db/collection?limit=100&offset=300
 ```
 
 ### DOWNLOAD

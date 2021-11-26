@@ -1,4 +1,4 @@
-import { DocumentData } from "firebase-admin/firestore";
+import { DocumentData, FieldPath } from "firebase-admin/firestore";
 import { initFirestoreSDK } from "lib/firebase/FirebaseAdmin";
 import { parseArrayParam, parseIntegerParam, parseParam } from "lib/utils/Parameters";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -123,9 +123,28 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 
 		// Pagination
 		const pageSize = parseIntegerParam(req.query, ["limit", "pageSize", "page_size"]);
+		let usePagination;
 		if (pageSize) {
-			// we de-facto exclude the case where pageSize=0
-			collectionRef = collectionRef.limit(pageSize);
+			// Parse other integer pagination parameters
+			const page = parseIntegerParam(req.query, ["page"]);
+			let offset = parseIntegerParam(req.query, ["offset"]);
+			if (page || offset) {
+				if (page) {
+					offset = page * pageSize;
+				}
+				if (orderBy.length === 0) {
+					// We must provide a default sort order to paginate
+					collectionRef = collectionRef.orderBy(FieldPath.documentId());
+				}
+				usePagination = {
+					from: offset,
+					to: (offset as number) + pageSize
+				};
+				console.log("Using pagination", usePagination);
+			} else {
+				// Starting from the beginning we can limit the number of records returned
+				collectionRef = collectionRef.limit(pageSize);
+			}
 		}
 
 		/**
@@ -133,17 +152,26 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 		 * stream of DocumentData objects from firestore
 		 * and write their JSON representation as strings
 		 */
-		let i = 0;
+		let readIndex = 0,
+			count = 0;
+
 		const toJSON = new Transform({
 			writableObjectMode: true,
 
 			transform(documentSnapshot: DocumentData, _encoding, callback) {
-				const jsonData = JSON.stringify(documentSnapshot.data());
-				this.push((i++ > 0 ? "," : "[") + jsonData);
+				if (
+					!usePagination ||
+					(readIndex >= usePagination.from && readIndex < usePagination.to) // Check the pagination window
+				) {
+					const jsonData = JSON.stringify(documentSnapshot.data());
+					this.push((count++ > 0 ? "," : "[") + jsonData);
+				}
+				// Always count the record as read
+				readIndex++;
 				callback();
 			},
 			flush(callback) {
-				this.push(i === 0 ? "[]" : "]"); // Close the array
+				this.push(count === 0 ? "[]" : "]"); // Close the array
 				callback();
 			}
 		});
