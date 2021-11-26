@@ -1,4 +1,4 @@
-import { DocumentData, FieldPath } from "firebase-admin/firestore";
+import { DocumentData } from "firebase-admin/firestore";
 import { initFirestoreSDK } from "lib/firebase/FirebaseAdmin";
 import { parseArrayParam, parseIntegerParam, parseParam } from "lib/utils/Parameters";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -126,19 +126,6 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 		if (pageSize) {
 			// we de-facto exclude the case where pageSize=0
 			collectionRef = collectionRef.limit(pageSize);
-			// Parse other integer pagination parameters
-			const page = parseIntegerParam(req.query, ["page"]);
-			let offset = parseIntegerParam(req.query, ["offset"]);
-			if (page || offset) {
-				if (page) {
-					offset = (page - 1) * pageSize;
-				}
-				if (orderBy.length === 0) {
-					// We must provide a default sort order to paginate
-					collectionRef = collectionRef.orderBy(FieldPath.documentId());
-				}
-				collectionRef = collectionRef.startAfter(offset); // @TODO FIX THIS NOT WORKING
-			}
 		}
 
 		/**
