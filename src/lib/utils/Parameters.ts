@@ -19,7 +19,7 @@ export const parseParam = (
 	names: string | string[],
 	required = false
 ): string | undefined => {
-	// Passing only one parameter name
+	// Received only one parameter name
 	if (typeof names === "string") {
 		names = [names];
 	}
@@ -40,6 +40,8 @@ export const parseParam = (
 
 /**
  * Parse a multi value parameter that may have multiple aliases (names variations)
+ * If not using the traditional approach for multi value parameters : `choices=a&choices=b`
+ * The values can also be comma separated : `choices=a,b`
  *
  * @param {Object} source The NextJS Api query object
  * @param {String|Array<String>} names Aliases for the parameter names
@@ -52,7 +54,7 @@ export const parseArrayParam = (
 	names: string | string[],
 	required = false
 ): string[] => {
-	// Passing only one parameter name
+	// Received only one parameter name
 	if (typeof names === "string") {
 		names = [names];
 	}
@@ -76,7 +78,7 @@ export const parseArrayParam = (
 };
 
 /**
- * Parse an integer parameter that may have aliases (names variations)
+ * Parse an integer parameter that may have multiple aliases (names variations)
  *
  * @param {Object} source The NextJS Api query object
  * @param {String|Array<String>} names Aliases for the parameter names
@@ -89,7 +91,7 @@ export const parseIntegerParam = (
 	names: string | string[],
 	required = false
 ): number | undefined => {
-	// Passing only one parameter name
+	// Received only one parameter name
 	if (typeof names === "string") {
 		names = [names];
 	}

@@ -91,18 +91,22 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 
 		// NOW PARSE THE POSSIBLE QUERY FILTERS
 
-		// Retrieves only certain fields
-		const fields = parseParam(req.query, "fields");
-		if (fields) {
-			// Field names are comma separated
-			collectionRef = collectionRef.select(...fields.split(","));
+		// Retrieves only certain fields (Field names are comma separated)
+		const fields = parseArrayParam(req.query, "fields");
+		if (fields.length) {
+			collectionRef = collectionRef.select(...fields);
 		}
 
 		// We may have multiple orderBy parameters, ascending or descending
 		// Example : orderBy=year-,title
 		// But multiple sort will usually fail if the corresponding index is not present.. :
 		// Cloud Firestore uses composite indexes for compound queries not already supported by single field indexes (ex: combining equality and range operators).
-		let orderBy = parseArrayParam(req.query, ["orderBy", "order_by"]);
+		let orderBy = parseArrayParam(req.query, [
+			"orderBy",
+			"order_by",
+			"sortBy",
+			"sort_by"
+		]);
 		if (orderBy.length) {
 			orderBy.forEach((fieldName) => {
 				if (/-$/.test(fieldName)) {
