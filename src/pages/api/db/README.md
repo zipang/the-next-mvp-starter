@@ -2,12 +2,12 @@
 
 ## INSTALLATION
 
-This API entry point instanciates a Firebase ADMIN SDK, so it needs advanced credentials that must not be stored in the GIT repo.  
-The SDK instanciation must be done through secrets that are only stored in environment variables.
+IMPORTANT: This API entry point instanciates a Firebase ADMIN SDK, so it needs advanced credentials that must NOT be stored in the GIT repo.  
+The SDK instanciation must be done through secrets that are _only_ stored in environment variables.
 
 ### Locally :
 
-Create the `.env` file with this content : copy `.env.sample` and fill the values.
+Create the `.env` file with this content : (copy `.env.sample` and fill the values).
 
 ```properties
 NEXT_PUBLIC_FIREBASE_API_KEY =
@@ -22,7 +22,7 @@ FIREBASE_ADMIN_SDK_PRIVATE_KEY = -----BEGIN PRIVATE KEY-----|IMPORTANT: Replace 
 ```
 
 The first batch of `NEXT_PUBLIC_FIREBASE` properties are the one that are used by the web client sdk.  
-They are not sensitives. You can find them and copy them from the Project Settings, apps (create one) and the code sample that is provided to instanciate the web SDK :
+They are not sensitives. You can find them and copy them from the Firebase console : Project Settings, apps (create one) and the code sample that is provided to instanciate the web SDK :
 
 ```js
 // Your web app's Firebase configuration
@@ -65,13 +65,22 @@ But with an important trick :
 
 When deploying to Vercel you'll have to manually create and fill the values for all these enviromnent variables now correctly filled in the `.env` file. (boring)
 
-## GET THE DATA
+## NAVIGATE THE DATA
 
-The idea is to easily retrieve and download portions of the data we are insterested into.
+The idea is to easily retrieve and download portions of the data we are interested into.
+Path appended to the API entry point (/api/db) is followed by alterning collection names and document ids.
+
+Examples (collections or document must exists or you should get a 404) :
+
+```
+https://somewhere.overthe.rainbow/api/db/authors
+https://somewhere.overthe.rainbow/api/db/authors/john-doe
+https://somewhere.overthe.rainbow/api/db/authors/john-doe/books
+```
 
 ### SELECT
 
-To include only the fields you are insterested into, pass the `fields` parameter :
+To select only the relevant fields you are interested into, just pass the `fields` parameter :
 
 ```
 https://somewhere.overthe.rainbow/api/db/collection?fields=this,that
@@ -79,7 +88,7 @@ https://somewhere.overthe.rainbow/api/db/collection?fields=this,that
 
 ### PAGINATE
 
-To restrict the amount of data retrieved, pass the limit or pageSize parameter :
+To limit the amount of data retrieved, pass the `limit` or `pageSize` parameter :
 
 ```
 https://somewhere.overthe.rainbow/api/db/collection?limit=100
