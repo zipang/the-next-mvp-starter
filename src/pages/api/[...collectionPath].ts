@@ -1,23 +1,23 @@
 import { DocumentData } from "firebase-admin/firestore";
 import { initFirestoreSDK } from "lib/firebase/FirebaseAdmin";
-import { parseIntegerParam } from "lib/utils/Parameters";
+import { parseArrayParam, parseIntegerParam, parseParam } from "lib/utils/Parameters";
 import { NextApiRequest, NextApiResponse } from "next";
 import { Transform } from "stream";
 
 /**
- * Check if a .json extension is present or if a fileName parameter is present
+ * Check if a fileName parameter is present or if a .json extension is present in the path
  * And set the file-attachment response header accordingly
  * @param {NextApiRequest} req
  * @param {NextApiResponse} resp
  */
 const checkForFileAttachment = (req: NextApiRequest, resp: NextApiResponse) => {
-	let fileName = (req.query.fileName || req.query.file_name) as string;
+	let fileName = parseParam(req.query, ["fileName", "file_name"]);
 
 	if (!fileName) {
-		// Look if we have a .json extension to the object's path
-		// Convert paths to filename /authors/john/posts.json > authors-john-posts.json
+		// Convert document path to a suitable filename : authors/john/posts.json > authors-john-posts.json
 		fileName = (req.query.collectionPath as string[]).join("-");
-		if (!/.json$/i.test(fileName)) return; // There is no extensions
+		// And look if we have a .json extension to this potential filename
+		if (!/.json$/i.test(fileName)) return; // There is no extension
 	}
 
 	resp.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
@@ -40,7 +40,7 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 		checkForFileAttachment(req, resp);
 
 		if (req.query.collectionPath.length % 2 === 0) {
-			// An even path leads us to a document reference instead of a collection !
+			// An even path leads us to a Document reference instead of a Collection !
 			const documentPath = (req.query.collectionPath as string[])
 				.join("/")
 				.replace(/.json$/i, ""); // Remove the .json extension if present;
@@ -57,24 +57,23 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 			}
 
 			// Check if we require only a few fields
-			let data;
-			let fields = req.query.fields;
-			if (typeof fields === "string" && fields.length) {
-				// Field names are comma separated
-				fields = fields.split(",");
-				data = fields.reduce((selected, fieldName) => {
+			let data: DocumentData | undefined;
+			let fields = parseParam(req.query, "fields");
+			if (!fields) {
+				// No : Take all
+				data = documentData.data();
+			} else {
+				// Field names are in fact comma separated
+				data = fields.split(",").reduce((selected, fieldName) => {
 					selected[fieldName] = documentData.get(fieldName);
 					return selected;
 				}, {});
-			} else {
-				// No : Take all
-				data = documentData.data();
 			}
-			// It's over
+			// Send it
 			return resp.json(data);
 		}
 
-		// Collection name (collections in Firestore have uneven paths like /authors/[id]/posts)
+		// It is a Collection name (collections in Firestore have uneven paths like /authors/[id]/posts)
 		const collectionPath = (req.query.collectionPath as string[])
 			.join("/")
 			.replace(/.json$/i, ""); // Remove the .json extension if present
@@ -90,24 +89,36 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 			});
 		}
 
-		// NOW PARSE ALL THE POSSIBLE QUERY PARAMETERS
+		// NOW PARSE THE POSSIBLE QUERY FILTERS
+
 		// Retrieves only certain fields
-		let fields = req.query.fields;
-		if (typeof fields === "string" && fields.length) {
+		const fields = parseParam(req.query, "fields");
+		if (fields) {
 			// Field names are comma separated
-			fields = fields.split(",");
-			collectionRef = collectionRef.select(...fields);
+			collectionRef = collectionRef.select(...fields.split(","));
 		}
 
-		// Order by
-		let orderBy = req.query.orderBy || req.query.order_by;
-		if (typeof orderBy === "string" && orderBy.length) {
-			collectionRef = collectionRef.orderBy(orderBy);
+		// We may have multiple orderBy parameters, ascending or descending
+		// Example : orderBy=year-,title
+		// But multiple sort will usually fail if the corresponding index is not present.. :
+		// Cloud Firestore uses composite indexes for compound queries not already supported by single field indexes (ex: combining equality and range operators).
+		let orderBy = parseArrayParam(req.query, ["orderBy", "order_by"]);
+		if (orderBy.length) {
+			orderBy.forEach((fieldName) => {
+				if (/-$/.test(fieldName)) {
+					// The presence of a minus suffix indicates the descending order
+					collectionRef = collectionRef.orderBy(
+						fieldName.replace(/-$/, ""),
+						"desc"
+					);
+				} else {
+					collectionRef = collectionRef.orderBy(fieldName, "desc");
+				}
+			});
 		}
 
 		// Pagination
 		const pageSize = parseIntegerParam(req.query, ["limit", "pageSize", "page_size"]);
-
 		if (pageSize) {
 			// we de-facto exclude the case where pageSize=0
 			collectionRef = collectionRef.limit(pageSize);
@@ -122,12 +133,12 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 			}
 		}
 
-		let i = 0;
 		/**
 		 * Create a Transform stream that will read a
 		 * stream of DocumentData objects from firestore
 		 * and write their JSON representation as strings
 		 */
+		let i = 0;
 		const toJSON = new Transform({
 			writableObjectMode: true,
 
