@@ -66,7 +66,7 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 				// No selection : Take all
 				data = documentData.data();
 			} else {
-				// Field names are in fact comma separated
+				// Read required fields one by one
 				data = fields.reduce((selected, fieldName) => {
 					selected[fieldName] = documentData.get(fieldName);
 					return selected;
@@ -94,7 +94,7 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 
 		// NOW PARSE AND APPLY THE POSSIBLE QUERY FILTERS
 
-		// Retrieves only certain fields (Field names are comma separated)
+		// Retrieves only the selected fields
 		if (fields.length) {
 			collectionRef = collectionRef.select(...fields);
 		}
