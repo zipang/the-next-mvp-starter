@@ -1,4 +1,4 @@
-import { DocumentData } from "firebase-admin/firestore";
+import { DocumentData, FieldPath } from "firebase-admin/firestore";
 import { initFirestoreSDK } from "lib/firebase/FirebaseAdmin";
 import { parseArrayParam, parseIntegerParam, parseParam } from "lib/utils/Parameters";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -133,7 +133,11 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 				if (page) {
 					offset = (page - 1) * pageSize;
 				}
-				collectionRef = collectionRef.startAfter(offset);
+				if (orderBy.length === 0) {
+					// We must provide a default sort order to paginate
+					collectionRef = collectionRef.orderBy(FieldPath.documentId());
+				}
+				collectionRef = collectionRef.startAfter(offset); // @TODO FIX THIS NOT WORKING
 			}
 		}
 
@@ -148,12 +152,11 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 
 			transform(documentSnapshot: DocumentData, _encoding, callback) {
 				const jsonData = JSON.stringify(documentSnapshot.data());
-				// console.log(`Writing ${collectionPath} #${i}`, jsonData);
 				this.push((i++ > 0 ? "," : "[") + jsonData);
 				callback();
 			},
 			flush(callback) {
-				this.push("]"); // Close the array
+				this.push(i === 0 ? "[]" : "]"); // Close the array
 				callback();
 			}
 		});
@@ -161,7 +164,9 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 		collectionRef.stream().pipe(toJSON).pipe(resp);
 	} catch (err) {
 		console.error(err);
-		resp.status(500).json(err);
+		resp.status(500).json({
+			message: (err as Error).message
+		});
 	}
 };
 
