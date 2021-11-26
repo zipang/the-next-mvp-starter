@@ -35,9 +35,13 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 		const firestore = await initFirestoreSDK(
 			process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID + "-admin-sdk"
 		);
+
 		resp.setHeader("Content-Type", "application/json; charset=utf-8");
 		// Check to see if we want to download the response as a json file
 		checkForFileAttachment(req, resp);
+
+		// Retrieves only certain fields (Field names are comma separated)
+		const fields = parseArrayParam(req.query, "fields");
 
 		if (req.query.collectionPath.length % 2 === 0) {
 			// An even path leads us to a Document reference instead of a Collection !
@@ -56,15 +60,14 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 				});
 			}
 
-			// Check if we require only a few fields
+			// Check to manually filter the fields required
 			let data: DocumentData | undefined;
-			let fields = parseParam(req.query, "fields");
-			if (!fields) {
-				// No : Take all
+			if (fields.length === 0) {
+				// No selection : Take all
 				data = documentData.data();
 			} else {
 				// Field names are in fact comma separated
-				data = fields.split(",").reduce((selected, fieldName) => {
+				data = fields.reduce((selected, fieldName) => {
 					selected[fieldName] = documentData.get(fieldName);
 					return selected;
 				}, {});
@@ -89,10 +92,9 @@ const getDocumentOrCollection = async (req: NextApiRequest, resp: NextApiRespons
 			});
 		}
 
-		// NOW PARSE THE POSSIBLE QUERY FILTERS
+		// NOW PARSE AND APPLY THE POSSIBLE QUERY FILTERS
 
 		// Retrieves only certain fields (Field names are comma separated)
-		const fields = parseArrayParam(req.query, "fields");
 		if (fields.length) {
 			collectionRef = collectionRef.select(...fields);
 		}
