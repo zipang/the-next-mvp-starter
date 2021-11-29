@@ -7,7 +7,7 @@ Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packag
 ```bash
 npx create-next-app --example https://github.com/zipang/the-next-mvp-starter my-starter-project
 # or
-yarn create next-app --example git@github.com:zipang/the-next-mvp-starter.git my-starter-project
+yarn create next-app --example https://github.com/zipang/the-next-mvp-starter my-starter-project
 ```
 
 ## Deploy on Vercel
